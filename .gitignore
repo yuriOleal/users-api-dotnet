@@ -1,0 +1,19 @@
+## Build results
+bin/
+obj/
+
+## User-specific files
+*.user
+*.suo
+
+## Visual Studio
+.vs/
+
+## Rider
+.idea/
+
+## Logs
+*.log
+
+## Environment
+appsettings.Development.json
