@@ -1,15 +1,18 @@
+using Api.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Adiciona suporte a Controllers
+// Add services to the container
 builder.Services.AddControllers();
-
-// Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Dependency Injection
+builder.Services.AddScoped<IUserService, UserService>();
+
 var app = builder.Build();
 
-// Pipeline HTTP
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -17,8 +20,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// Mapeia os Controllers
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

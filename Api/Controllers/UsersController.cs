@@ -1,111 +1,56 @@
-using Microsoft.AspNetCore.Mvc;
-using Api.Models;
 using Api.DTOs;
-using System.Collections.Generic;
-using System.Linq;
-using Api.Dtos;
+using Api.Services;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers
+namespace Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController : ControllerBase
 {
-    // Marca esta classe como Controller de API
-    [ApiController]
+    private readonly IUserService _service;
 
-    // Define a rota base como: /api/users
-    [Route("api/[controller]")]
-    public class UsersController : ControllerBase
+    public UsersController(IUserService service)
     {
-        // Lista em memória simulando um banco de dados
-        private static List<User> users = new()
-        {
-            new User
-            {
-                Id = 1,
-                Name = "Yuri",
-                Email = "yurilisco@gmail.com"
-            }
-        };
+        _service = service;
+    }
 
-        // GET /api/users
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            return Ok(users);
-        }
+    [HttpGet]
+    public IActionResult GetAll()
+        => Ok(_service.GetAll());
 
-        // GET /api/users/1
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id)
-        {
-            var user = users.FirstOrDefault(u => u.Id == id);
+    [HttpGet("{id}")]
+    public IActionResult GetById(Guid id)
+    {
+        var user = _service.GetById(id);
+        if (user is null) return NotFound();
+        return Ok(user);
+    }
 
-            if (user == null)
-                return NotFound(new { message = "Usuário não encontrado" });
+    [HttpPost]
+    public IActionResult Create(CreateUserDto dto)
+    {
+        var user = _service.Create(dto);
+        return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
+    }
 
-            return Ok(user);
-        }
+    [HttpPut("{id}")]
+    public IActionResult Update(Guid id, UpdateUserDto dto)
+    {
+        var user = _service.Update(id, dto);
+        if (user == null) return NotFound();
 
-        // POST /api/users
-        [HttpPost]
-        public IActionResult Create(CreateUserDto dto)
-        {
-            // Validação simples
-            if (string.IsNullOrWhiteSpace(dto.Name))
-                return BadRequest(new { message = "Nome é obrigatório" });
+        return Ok(user);
+    }
+   
+    [HttpDelete("{id}")]
+    public IActionResult Delete(Guid id)
+    {
+        var deleted = _service.Delete(id);
 
-            if (string.IsNullOrWhiteSpace(dto.Email))
-                return BadRequest(new { message = "Email é obrigatório" });
+        if (!deleted)
+            return NotFound();
 
-            var newUser = new User
-            {
-                Id = users.Any() ? users.Max(u => u.Id) + 1 : 1,
-                Name = dto.Name,
-                Email = dto.Email
-            };
-
-            users.Add(newUser);
-
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = newUser.Id },
-                newUser
-            );
-        }
-
-        // PUT api/users/1
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, UpdateUserDto dto)
-        {
-            // Procura o usuário existente
-            var user = users.FirstOrDefault(u => u.Id == id);
-
-            // Se não existir, 404 (padrão REST)
-            if (user == null)
-                return NotFound(new { message = "Usuário não encontrado" });
-
-            // Atualiza apenas os campos permitidos
-            user.Name = dto.Name;
-            user.Email = dto.Email;
-
-            // Retorna 200 com o usuário atualizado
-            return Ok(user);
-        }
-
-        // DELETE api/users/1
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            // Procura o usuário
-            var user = users.FirstOrDefault(u => u.Id == id);
-
-            // Se não existir, retorna 404
-            if (user == null)
-                return NotFound(new { message = "Usuário não encontrado" });
-
-            // Remove da lista em memória
-            users.Remove(user);
-
-            // 204 = sucesso sem conteúdo (padrão REST)
-            return NoContent();
-        }
+        return NoContent(); // 204 padrão REST
     }
 }
