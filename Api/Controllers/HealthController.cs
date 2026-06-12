@@ -11,8 +11,8 @@ public class HealthController : ControllerBase
     {
         return Ok(new
         {
-            status = "API rodando",
-            timestamp = DateTime.Now
+            status = "healthy",
+            timestamp = DateTime.UtcNow
         });
     }
 }
