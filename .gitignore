@@ -1,19 +1,21 @@
-## Build results
+# Build
 bin/
 obj/
 
-## User-specific files
+# SQLite
+*.db
+*.db-wal
+*.db-shm
+
+# IDE
+.vs/
+.vscode/
 *.user
 *.suo
 
-## Visual Studio
-.vs/
-
-## Rider
-.idea/
-
-## Logs
-*.log
-
-## Environment
+# Secrets
 appsettings.Development.json
+
+# OS
+Thumbs.db
+.DS_Store
