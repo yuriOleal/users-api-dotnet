@@ -69,11 +69,17 @@ Api/
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/seu-usuario/users-api.git
-cd users-api
+git clone https://github.com/yuriOleal/users-api-dotnet.git
+cd users-api-dotnet
 ```
 
-2. Configure a chave JWT (crie um arquivo `appsettings.Development.json` na pasta `Api/`):
+2. Configure a chave JWT com pelo menos 32 caracteres. Prefira uma variável de ambiente:
+```bash
+# PowerShell
+$env:Jwt__Key="sua-chave-local-com-pelo-menos-32-caracteres"
+```
+
+Como alternativa, crie um arquivo `appsettings.Development.json` na pasta `Api/`:
 ```json
 {
   "Jwt": {

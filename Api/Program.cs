@@ -51,7 +51,14 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 // JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+var jwtKey = jwtSettings["Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        "Configure Jwt:Key with at least 32 characters. Use Jwt__Key in environment variables."
+    );
+}
+var key = Encoding.ASCII.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
 {
