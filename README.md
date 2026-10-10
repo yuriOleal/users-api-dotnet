@@ -26,8 +26,9 @@ Api/
 ## Funcionalidades
 
 - Registro e login de usuários
-- Autenticação via JWT com expiração configurável
-- CRUD completo de usuários (protegido por token)
+- Autenticação via JWT com expiração de 2 horas
+- Consulta, atualização e exclusão dos próprios dados (protegidas por token)
+- Respostas públicas sem o hash de senha; testes de regressão para isolamento por usuário
 - Hash de senhas com BCrypt
 - Validação de dados de entrada
 - Tratamento global de exceções
@@ -47,11 +48,12 @@ Api/
 
 | Método | Rota             | Descrição              |
 |--------|------------------|------------------------|
-| GET    | /api/users       | Listar todos           |
-| GET    | /api/users/{id}  | Buscar por ID          |
-| POST   | /api/users       | Criar usuário          |
-| PUT    | /api/users/{id}  | Atualizar usuário      |
-| DELETE | /api/users/{id}  | Remover usuário        |
+| GET    | /api/users       | Listar apenas a própria conta |
+| GET    | /api/users/{id}  | Buscar a própria conta |
+| PUT    | /api/users/{id}  | Atualizar a própria conta |
+| DELETE | /api/users/{id}  | Remover a própria conta |
+
+Novas contas são criadas exclusivamente por `POST /api/auth/register`. Uma conta autenticada não pode consultar, alterar ou remover outra conta.
 
 ### Outros
 
@@ -103,6 +105,14 @@ http://localhost:5150/swagger
 
 ## Testando a API
 
+Rode a suíte automatizada a partir da raiz do repositório:
+
+```bash
+dotnet test Api.Tests/Api.Tests.csproj
+```
+
+O GitHub Actions executa restauração, build e testes a cada push e pull request.
+
 ### 1. Registrar
 ```bash
 curl -X POST http://localhost:5150/api/auth/register \
@@ -132,7 +142,7 @@ O banco SQLite é criado automaticamente na primeira execução via migrations d
 |--------------|--------|----------------------|
 | Id           | GUID   | Identificador único  |
 | Name         | string | Nome do usuário      |
-| Email        | string | Email (único)        |
+| Email        | string | Email da conta       |
 | PasswordHash | string | Senha hashada        |
 
 ## Decisões Técnicas
@@ -140,13 +150,20 @@ O banco SQLite é criado automaticamente na primeira execução via migrations d
 - **SQLite** para simplicidade — sem necessidade de instalar banco externo
 - **BCrypt** para hash de senhas — resistente a ataques de força bruta
 - **JWT** com expiração de 2h — padrão para APIs stateless
-- **Interface IUserService** — facilita testes e troca de implementação
+- **Interface IUserService** — mantém a regra de negócio isolada e facilita a evolução da implementação
 - **Migrations automáticas** no startup — banco sempre atualizado
+
+## Segurança no desenvolvimento
+
+- A chave JWT deve ser fornecida por variável de ambiente ou por `appsettings.Development.json` local.
+- Nenhuma credencial real deve ser commitada no repositório.
+- O SQLite é usado somente como banco local de demonstração; em um ambiente real, a conexão deve ser configurada para o banco adotado pela aplicação.
+- Os endpoints de usuário usam o identificador do token JWT para limitar o acesso à própria conta. `PasswordHash` permanece no modelo de persistência e não integra os DTOs de resposta.
 
 ## Próximos passos
 
-- [ ] Adicionar paginação na listagem
+- [ ] Adicionar índice único de e-mail e tratar conflito de concorrência no registro
 - [ ] Implementar refresh token
 - [ ] Adicionar logs estruturados (Serilog)
-- [ ] Testes unitários e de integração
+- [ ] Adicionar testes HTTP de ponta a ponta e ampliar os cenários de validação
 - [ ] Deploy com Docker

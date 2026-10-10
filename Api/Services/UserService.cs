@@ -14,29 +14,9 @@ public class UserService : IUserService
         _context = context;
     }
 
-    public IEnumerable<User> GetAll()
-    {
-        return _context.Users.ToList();
-    }
-
     public User? GetById(Guid id)
     {
         return _context.Users.FirstOrDefault(u => u.Id == id);
-    }
-
-    public User Create(CreateUserDto dto)
-    {
-        var user = new User
-        {
-            Id = Guid.NewGuid(),
-            Name = dto.Name,
-            Email = dto.Email
-        };
-
-        _context.Users.Add(user);
-        _context.SaveChanges();
-
-        return user;
     }
 
     public User? Update(Guid id, UpdateUserDto dto)
